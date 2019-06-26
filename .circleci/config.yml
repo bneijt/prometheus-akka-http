@@ -1,0 +1,33 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/repo
+    environment:
+      SBT_VERSION: 1.2.8
+    steps:
+      - run:
+          name: Install SBT
+          command: |
+            sudo apt update
+            sudo apt install -y curl
+            curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
+            sudo dpkg -i sbt-$SBT_VERSION.deb
+            rm sbt-$SBT_VERSION.deb
+            sudo apt-get install -y --fix-broken
+      - checkout
+      - restore_cache:
+          key: sbt-cache
+      - run:
+          name: Build
+          command: |
+            sbt ++2.11.12 clean coverage test coverageReport < /dev/null
+            sbt ++2.12.8 clean coverage test coverageReport < /dev/null
+            sbt ++2.13.0 clean coverage test coverageReport < /dev/null
+      - save_cache:
+          key: sbt-cache
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.sbt"
+            - "~/.m2"
