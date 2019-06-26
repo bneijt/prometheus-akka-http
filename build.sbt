@@ -4,19 +4,19 @@ name := "prometheus-akka-http"
 
 organization := "com.lonelyplanet"
 
-version := "0.4.0"
+version := "0.4.1"
 
-crossScalaVersions := Seq("2.12.8", "2.11.12")
+crossScalaVersions := Seq("2.13.0", "2.12.8", "2.11.12")
 
-resolvers += "Sonatype release repository" at "https://oss.sonatype.org/content/repositories/releases/"
+resolvers += Resolver.sonatypeRepo("releases")
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= {
   val simpleclientVersion = "0.6.0"
-  val akkaVersion         = "2.5.19"
-  val akkaHttpVersion     = "10.1.7"
-  val scalaTestVersion    = "3.0.5"
+  val akkaVersion         = "2.5.23"
+  val akkaHttpVersion     = "10.1.8"
+  val scalaTestVersion    = "3.0.8"
 
   Seq(
     "com.typesafe.akka"    %% "akka-actor"                           % akkaVersion % Provided,
@@ -25,7 +25,7 @@ libraryDependencies ++= {
     "com.typesafe.akka"    %% "akka-http-spray-json"                 % akkaHttpVersion % Provided,
     "io.prometheus"        %  "simpleclient"                         % simpleclientVersion,
     "io.prometheus"        %  "simpleclient_common"                  % simpleclientVersion,
-    "org.scalamock"        %% "scalamock-scalatest-support"          % "3.6.0" % Test,
+    "org.scalamock"        %% "scalamock"                            % "4.3.0" % Test,
     "com.typesafe.akka"    %% "akka-testkit"                         % akkaVersion % Test,
     "com.typesafe.akka"    %% "akka-http-testkit"                    % akkaHttpVersion % Test,
     "org.scalatest"        %% "scalatest"                            % scalaTestVersion % Test,
@@ -38,7 +38,7 @@ scalariformAutoformat := true
 
 scalariformPreferences := scalariformPreferences.value
   .setPreference(AlignSingleLineCaseStatements, true)
-  .setPreference(DoubleIndentClassDeclaration, true)
+  .setPreference(DoubleIndentConstructorArguments, true)
   .setPreference(SpacesAroundMultiImports, false)
   .setPreference(CompactControlReadability, false)
 
@@ -72,3 +72,18 @@ val publishSettings =
       publishMavenStyle := false,
       resolvers += Resolver.url("lonelyplanet ivy resolver", url("http://dl.bintray.com/lonelyplanet/maven"))(Resolver.ivyStylePatterns)
     )
+
+lazy val scoverageSettings = Seq(
+  coverageEnabled := {
+    if (priorTo2_13(scalaVersion.value))
+      coverageEnabled.value
+    else
+      false
+  }
+)
+
+def priorTo2_13(scalaVersion: String): Boolean =
+  CrossVersion.partialVersion(scalaVersion) match {
+    case Some((2, minor)) if minor < 13 => true
+    case _                              => false
+  }
